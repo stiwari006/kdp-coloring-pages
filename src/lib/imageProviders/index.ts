@@ -44,8 +44,9 @@ export function getImageProvider(): ImageProvider {
         throw new Error(`Unknown image provider: ${env.IMAGE_PROVIDER}`);
     }
     return providerInstance;
-  } catch (error: any) {
-    throw new Error(`Failed to initialize image provider: ${error.message}`);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    throw new Error(`Failed to initialize image provider: ${err.message}`);
   }
 }
 

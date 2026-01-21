@@ -62,11 +62,13 @@ export class OpenAIProvider implements ImageProvider {
       }
 
       return imageBuffer;
-    } catch (error: any) {
-      if (error.status === 429) {
+    } catch (error: unknown) {
+      const err = error as { status?: number; message?: string };
+      if (err.status === 429) {
         throw new Error('OpenAI rate limit exceeded. Please try again later.');
       }
-      throw new Error(`OpenAI image generation failed: ${error.message}`);
+      const message = err.message || (error instanceof Error ? error.message : String(error));
+      throw new Error(`OpenAI image generation failed: ${message}`);
     }
   }
 }

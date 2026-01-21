@@ -15,6 +15,8 @@ export default function ResultsPage() {
   useEffect(() => {
     if (!jobId) return;
 
+    let interval: NodeJS.Timeout | null = null;
+
     const fetchJob = async () => {
       try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -42,30 +44,56 @@ export default function ResultsPage() {
 
         // Poll for updates if job is still processing
         if (data.status === 'pending' || data.status === 'processing') {
-          const interval = setInterval(async () => {
-            const { data: updatedJob } = await supabaseClient
-              .from('jobs')
-              .select('*')
-              .eq('id', jobId)
-              .single();
-
-            if (updatedJob) {
-              setJob(updatedJob as Job);
-              if (updatedJob.status === 'completed' || updatedJob.status === 'failed') {
-                clearInterval(interval);
+          interval = setInterval(async () => {
+            try {
+              const { data: { session: currentSession } } = await supabaseClient.auth.getSession();
+              if (!currentSession) {
+                if (interval) clearInterval(interval);
+                return;
               }
+
+              const { data: updatedJob, error: pollError } = await supabaseClient
+                .from('jobs')
+                .select('*')
+                .eq('id', jobId)
+                .eq('user_id', currentSession.user.id)
+                .single();
+
+              if (pollError) {
+                console.error('Polling error:', pollError);
+                setError('Failed to fetch job updates');
+                if (interval) clearInterval(interval);
+                return;
+              }
+
+              if (updatedJob) {
+                setJob(updatedJob as Job);
+                if (updatedJob.status === 'completed' || updatedJob.status === 'failed') {
+                  if (interval) clearInterval(interval);
+                }
+              }
+            } catch (pollErr) {
+              console.error('Polling error:', pollErr);
+              setError('Failed to fetch job updates');
+              if (interval) clearInterval(interval);
             }
           }, 3000); // Poll every 3 seconds
-
-          return () => clearInterval(interval);
         }
-      } catch (err: any) {
-        setError(err.message || 'Failed to load job');
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        setError(error.message || 'Failed to load job');
         setLoading(false);
       }
     };
 
     fetchJob();
+
+    // Cleanup function
+    return () => {
+      if (interval) {
+        clearInterval(interval);
+      }
+    };
   }, [jobId]);
 
   if (loading) {

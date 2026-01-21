@@ -1,10 +1,12 @@
 type LogLevel = 'info' | 'warn' | 'error' | 'debug';
 
+type LogMetadata = Record<string, string | number | boolean | null | undefined>;
+
 interface LogEntry {
   level: LogLevel;
   message: string;
   timestamp: string;
-  metadata?: Record<string, any>;
+  metadata?: LogMetadata;
   error?: Error;
 }
 
@@ -30,7 +32,7 @@ class Logger {
     return parts.join(' ');
   }
 
-  private log(level: LogLevel, message: string, metadata?: Record<string, any>, error?: Error): void {
+  private log(level: LogLevel, message: string, metadata?: LogMetadata, error?: Error): void {
     const entry: LogEntry = {
       level,
       message,
@@ -61,19 +63,19 @@ class Logger {
     // e.g., Sentry, Datadog, CloudWatch, etc.
   }
 
-  info(message: string, metadata?: Record<string, any>): void {
+  info(message: string, metadata?: LogMetadata): void {
     this.log('info', message, metadata);
   }
 
-  warn(message: string, metadata?: Record<string, any>): void {
+  warn(message: string, metadata?: LogMetadata): void {
     this.log('warn', message, metadata);
   }
 
-  error(message: string, error?: Error, metadata?: Record<string, any>): void {
+  error(message: string, error?: Error, metadata?: LogMetadata): void {
     this.log('error', message, metadata, error);
   }
 
-  debug(message: string, metadata?: Record<string, any>): void {
+  debug(message: string, metadata?: LogMetadata): void {
     this.log('debug', message, metadata);
   }
 }

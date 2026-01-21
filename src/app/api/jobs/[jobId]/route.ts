@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseClient } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 
 export async function GET(
   request: NextRequest,
@@ -32,8 +33,9 @@ export async function GET(
     }
 
     return NextResponse.json({ job });
-  } catch (error: any) {
-    console.error('Job fetch error:', error);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Job fetch error', err, { jobId: params.jobId });
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

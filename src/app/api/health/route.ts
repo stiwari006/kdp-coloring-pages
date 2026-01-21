@@ -26,12 +26,13 @@ export async function GET() {
     return NextResponse.json(status, {
       status: isHealthy ? 200 : 503,
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     return NextResponse.json(
       {
         status: 'unhealthy',
         timestamp: new Date().toISOString(),
-        error: error.message,
+        error: err.message,
       },
       { status: 503 }
     );

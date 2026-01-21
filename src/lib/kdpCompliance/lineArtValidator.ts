@@ -80,10 +80,11 @@ export async function validateLineArt(buffer: Buffer): Promise<ValidationResult>
     }
 
     return { ok: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     return {
       ok: false,
-      reason: `Validation error: ${error.message}`,
+      reason: `Validation error: ${err.message}`,
     };
   }
 }

@@ -14,22 +14,24 @@ export async function GET() {
         },
         { status: 200 }
       );
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
       return NextResponse.json(
         {
           status: 'not ready',
           timestamp: new Date().toISOString(),
-          error: error.message,
+          error: err.message,
         },
         { status: 503 }
       );
     }
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
     return NextResponse.json(
       {
         status: 'error',
         timestamp: new Date().toISOString(),
-        error: error.message,
+        error: err.message,
       },
       { status: 500 }
     );

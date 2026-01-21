@@ -27,11 +27,12 @@ async function retryWithBackoff<T>(
   for (let attempt = 0; attempt < config.maxRetries; attempt++) {
     try {
       return await fn();
-    } catch (error: any) {
-      lastError = error;
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      lastError = err;
 
       // Check if it's a rate limit error
-      const isRateLimit = error.message?.toLowerCase().includes('rate limit');
+      const isRateLimit = err.message?.toLowerCase().includes('rate limit');
 
       if (isRateLimit && attempt < config.maxRetries - 1) {
         const delay = config.baseDelay * Math.pow(2, attempt);
@@ -42,7 +43,7 @@ async function retryWithBackoff<T>(
 
       // If not rate limit or last attempt, throw
       if (attempt === config.maxRetries - 1) {
-        throw error;
+        throw err;
       }
 
       // Exponential backoff for other errors
@@ -62,7 +63,13 @@ async function updateJobProgress(
   status?: 'processing' | 'failed',
   errorMessage?: string
 ): Promise<void> {
-  const update: any = {
+  const update: {
+    progress_current: number;
+    progress_total: number;
+    updated_at: string;
+    status?: 'processing' | 'failed';
+    error_message?: string;
+  } = {
     progress_current: current,
     progress_total: total,
     updated_at: new Date().toISOString(),
@@ -82,7 +89,7 @@ async function updateJobProgress(
     .eq('id', jobId);
 
   if (error) {
-    console.error(`Failed to update job progress: ${error.message}`);
+    logger.error(`Failed to update job progress: ${error.message}`, undefined, { jobId });
   }
 }
 
@@ -94,7 +101,7 @@ async function getUserPlan(userId: string): Promise<'free' | 'pro' | 'enterprise
     .single();
 
   if (error || !data) {
-    console.warn(`Could not fetch user plan for ${userId}, defaulting to free`);
+    logger.warn(`Could not fetch user plan for ${userId}, defaulting to free`, { userId });
     return 'free';
   }
 
@@ -195,15 +202,16 @@ async function processJob(job: Job): Promise<void> {
     }
 
     logger.info(`Job ${job.id} completed successfully`, { jobId: job.id });
-  } catch (error: any) {
-    logger.error(`Job ${job.id} failed`, error as Error, { jobId: job.id });
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error(`Job ${job.id} failed`, err, { jobId: job.id });
 
     await updateJobProgress(
       job.id,
       job.progress_current,
       job.page_count,
       'failed',
-      error.message || 'Unknown error occurred'
+      err.message || 'Unknown error occurred'
     );
   }
 }
@@ -237,8 +245,9 @@ async function workerLoop(): Promise<void> {
         // No jobs, wait before checking again
         await sleep(5000);
       }
-    } catch (error: any) {
-      logger.error('Worker error', error as Error);
+    } catch (error: unknown) {
+      const err = error instanceof Error ? error : new Error(String(error));
+      logger.error('Worker error', err);
       await sleep(5000);
     }
   }

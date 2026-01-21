@@ -44,11 +44,13 @@ export class StabilityProvider implements ImageProvider {
       }
 
       return Buffer.from(imageBase64, 'base64');
-    } catch (error: any) {
-      if (error.response?.status === 429) {
+    } catch (error: unknown) {
+      const err = error as { response?: { status?: number }; message?: string };
+      if (err.response?.status === 429) {
         throw new Error('Stability AI rate limit exceeded. Please try again later.');
       }
-      throw new Error(`Stability AI image generation failed: ${error.message}`);
+      const message = err.message || (error instanceof Error ? error.message : String(error));
+      throw new Error(`Stability AI image generation failed: ${message}`);
     }
   }
 }

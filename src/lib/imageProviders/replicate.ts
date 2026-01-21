@@ -42,11 +42,13 @@ export class ReplicateProvider implements ImageProvider {
 
       const arrayBuffer = await response.arrayBuffer();
       return Buffer.from(arrayBuffer);
-    } catch (error: any) {
-      if (error.status === 429) {
+    } catch (error: unknown) {
+      const err = error as { status?: number; message?: string };
+      if (err.status === 429) {
         throw new Error('Replicate rate limit exceeded. Please try again later.');
       }
-      throw new Error(`Replicate image generation failed: ${error.message}`);
+      const message = err.message || (error instanceof Error ? error.message : String(error));
+      throw new Error(`Replicate image generation failed: ${message}`);
     }
   }
 }

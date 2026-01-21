@@ -3,6 +3,7 @@ import { supabaseClient } from '@/lib/supabase';
 import { sanitizeInput } from '@/lib/kdpCompliance';
 import { getAvailableSizes, type BookSize } from '@/lib/kdpSizes';
 import type { Audience } from '@/lib/kdpCompliance/promptBuilder';
+import { logger } from '@/lib/logger';
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,7 +87,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error('Failed to create job:', error);
+      logger.error('Failed to create job', error as Error, { userId: user.id });
       return NextResponse.json(
         { error: 'Failed to create job' },
         { status: 500 }
@@ -103,8 +104,9 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ job }, { status: 201 });
-  } catch (error: any) {
-    console.error('Job creation error:', error);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Job creation error', err);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }
@@ -161,8 +163,9 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ jobs });
     }
-  } catch (error: any) {
-    console.error('Job fetch error:', error);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    logger.error('Job fetch error', err);
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

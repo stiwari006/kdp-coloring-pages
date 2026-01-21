@@ -76,10 +76,11 @@ export async function generateColoringPage(
         buffer: imageBuffer,
         validated: true,
       };
-    } catch (error: any) {
+    } catch (error: unknown) {
       attempts++;
+      const err = error instanceof Error ? error : new Error(String(error));
       if (attempts >= maxAttempts) {
-        throw error;
+        throw err;
       }
       // Exponential backoff
       await new Promise((resolve) => setTimeout(resolve, Math.pow(2, attempts) * 1000));
