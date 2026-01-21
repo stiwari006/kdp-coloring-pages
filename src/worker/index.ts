@@ -1,5 +1,6 @@
 /// <reference types="node" />
 import { fileURLToPath } from 'url';
+import { resolve } from 'path';
 import { supabase } from '../lib/supabase';
 import { generateColoringPage } from '../lib/imageProcessor';
 import { uploadImage, uploadFile, createSignedUrl, createZip, createPDF } from '../lib/storage';
@@ -251,12 +252,22 @@ const isMainModule = (() => {
     const currentFile = fileURLToPath(import.meta.url);
     const executedFile = process.argv[1];
     if (!executedFile) return false;
-    // Normalize paths for comparison
-    const normalizedCurrent = currentFile.replace(/\\/g, '/');
-    const normalizedExecuted = executedFile.replace(/\\/g, '/');
-    return normalizedCurrent === normalizedExecuted || normalizedExecuted.endsWith('worker/index.ts');
+    
+    // Normalize paths for comparison (handle both absolute and relative paths)
+    const normalizedCurrent = resolve(currentFile).replace(/\\/g, '/');
+    const normalizedExecuted = resolve(executedFile).replace(/\\/g, '/');
+    
+    // Check if paths match, or if executed file ends with worker/index.ts
+    return normalizedCurrent === normalizedExecuted || 
+           normalizedExecuted.endsWith('worker/index.ts') ||
+           normalizedExecuted.endsWith('src/worker/index.ts');
   } catch {
-    return false;
+    // Fallback: if we can't determine, assume it's the main module if process.argv[1] exists
+    // This handles cases where the check fails but the file is still being run directly
+    return !!process.argv[1] && (
+      process.argv[1].endsWith('worker/index.ts') || 
+      process.argv[1].endsWith('src/worker/index.ts')
+    );
   }
 })();
 
