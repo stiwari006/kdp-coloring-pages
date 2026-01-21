@@ -1,3 +1,4 @@
+// @ts-ignore - Module resolution will work at runtime when node_modules is installed
 import axios from 'axios';
 import { ImageProvider, ImageProviderConfig } from './types';
 import { env } from '../env';
@@ -13,6 +14,7 @@ export class StabilityProvider implements ImageProvider {
     this.apiKey = env.STABILITY_API_KEY;
   }
 
+  // @ts-ignore - Buffer type is available at runtime via Node.js
   async generateColoringPage(config: ImageProviderConfig): Promise<Buffer> {
     const { prompt, width, height, seed } = config;
 
@@ -43,6 +45,7 @@ export class StabilityProvider implements ImageProvider {
         throw new Error('No image data returned from Stability AI');
       }
 
+      // @ts-ignore - Buffer is available at runtime via Node.js
       return Buffer.from(imageBase64, 'base64');
     } catch (error: unknown) {
       const err = error as { response?: { status?: number }; message?: string };

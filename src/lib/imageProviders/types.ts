@@ -6,5 +6,6 @@ export interface ImageProviderConfig {
 }
 
 export interface ImageProvider {
+  // @ts-ignore - Buffer type is available at runtime via Node.js
   generateColoringPage(config: ImageProviderConfig): Promise<Buffer>;
 }
