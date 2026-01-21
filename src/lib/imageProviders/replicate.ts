@@ -20,7 +20,7 @@ export class ReplicateProvider implements ImageProvider {
 
     try {
       const output = await this.replicate.run(
-        this.model,
+        this.model as `${string}/${string}`,
         {
           input: {
             prompt,
