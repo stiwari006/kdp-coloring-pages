@@ -1,3 +1,5 @@
+/// <reference types="node" />
+import { fileURLToPath } from 'url';
 import { supabase } from '../lib/supabase';
 import { generateColoringPage } from '../lib/imageProcessor';
 import { uploadImage, uploadFile, createSignedUrl, createZip, createPDF } from '../lib/storage';
@@ -241,8 +243,24 @@ async function workerLoop(): Promise<void> {
   }
 }
 
-// Start worker if run directly
-if (require.main === module) {
+// Start worker if run directly (ESM-compatible check)
+// Check if this file is being executed directly (not imported)
+const isMainModule = (() => {
+  // ESM: check if this file's URL matches the executed file
+  try {
+    const currentFile = fileURLToPath(import.meta.url);
+    const executedFile = process.argv[1];
+    if (!executedFile) return false;
+    // Normalize paths for comparison
+    const normalizedCurrent = currentFile.replace(/\\/g, '/');
+    const normalizedExecuted = executedFile.replace(/\\/g, '/');
+    return normalizedCurrent === normalizedExecuted || normalizedExecuted.endsWith('worker/index.ts');
+  } catch {
+    return false;
+  }
+})();
+
+if (isMainModule) {
   workerLoop().catch((error) => {
     logger.error('Fatal worker error', error as Error);
     process.exit(1);
