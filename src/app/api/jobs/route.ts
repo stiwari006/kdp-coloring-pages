@@ -23,22 +23,24 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { book_size, page_count, audience, niche, description } = body;
 
-    // Validate inputs
-    if (!book_size || !getAvailableSizes().includes(book_size as BookSize)) {
+    // Validate inputs with proper type checking
+    const validBookSizes = getAvailableSizes();
+    if (!book_size || typeof book_size !== 'string' || !validBookSizes.includes(book_size as BookSize)) {
       return NextResponse.json(
         { error: 'Invalid book_size' },
         { status: 400 }
       );
     }
 
-    if (!page_count || page_count < 1 || page_count > 100) {
+    if (!page_count || typeof page_count !== 'number' || page_count < 1 || page_count > 100) {
       return NextResponse.json(
         { error: 'page_count must be between 1 and 100' },
         { status: 400 }
       );
     }
 
-    if (!audience || !['toddlers', 'kids', 'adults'].includes(audience)) {
+    const validAudiences: Audience[] = ['toddlers', 'kids', 'adults'];
+    if (!audience || typeof audience !== 'string' || !validAudiences.includes(audience as Audience)) {
       return NextResponse.json(
         { error: 'Invalid audience' },
         { status: 400 }
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
       .insert({
         user_id: user.id,
         status: 'pending',
-        book_size,
+        book_size: book_size as BookSize,
         page_count,
         audience,
         niche: niche || null,

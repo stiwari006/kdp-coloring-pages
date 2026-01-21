@@ -62,7 +62,7 @@ function validateEnv(): Env {
         NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || 'pk_placeholder',
         STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || 'sk_placeholder',
         STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
-        IMAGE_PROVIDER: (process.env.IMAGE_PROVIDER as any) || 'openai',
+        IMAGE_PROVIDER: (process.env.IMAGE_PROVIDER as 'openai' | 'stability' | 'replicate' | undefined) || 'openai',
         OPENAI_API_KEY: process.env.OPENAI_API_KEY,
         STABILITY_API_KEY: process.env.STABILITY_API_KEY,
         REPLICATE_API_TOKEN: process.env.REPLICATE_API_TOKEN,

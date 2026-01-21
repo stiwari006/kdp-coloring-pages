@@ -1,12 +1,15 @@
+import type { Audience } from '../lib/kdpCompliance/promptBuilder';
+import type { BookSize } from '../lib/kdpSizes';
+
 export type JobStatus = 'pending' | 'processing' | 'completed' | 'failed';
 
 export interface Job {
   id: string;
   user_id: string;
   status: JobStatus;
-  book_size: string;
+  book_size: BookSize;
   page_count: number;
-  audience: string;
+  audience: Audience;
   niche?: string;
   description?: string;
   progress_current: number;

@@ -112,7 +112,7 @@ async function processJob(job: Job): Promise<void> {
     const userPlan = await getUserPlan(job.user_id);
     const isFreePlan = userPlan === 'free';
 
-    const bookSize = job.book_size as BookSize;
+    const bookSize = job.book_size;
     const { width, height } = getPixelSize(bookSize);
 
     // Generate all pages
@@ -131,7 +131,7 @@ async function processJob(job: Job): Promise<void> {
                 jobId: job.id,
                 pageNumber,
                 bookSize,
-                audience: job.audience as any,
+                audience: job.audience,
                 niche: job.niche || undefined,
                 description: job.description || undefined,
                 isFreePlan,
