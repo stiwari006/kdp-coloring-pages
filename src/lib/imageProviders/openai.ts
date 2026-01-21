@@ -46,6 +46,10 @@ export class OpenAIProvider implements ImageProvider {
         });
       }
 
+      if (!response.data || response.data.length === 0) {
+        throw new Error('No image data returned from OpenAI');
+      }
+
       const imageData = response.data[0]?.b64_json;
       if (!imageData) {
         throw new Error('No image data returned from OpenAI');
