@@ -86,12 +86,17 @@ describe('validateLineArt', () => {
   });
 
   it('should reject image with too much black', async () => {
-    // 40% white, 55% black, 5% mid-tones (too much black)
+    // Note: The "too much black" case (>50%) is unreachable because if black > 50%,
+    // then white < 50% (since they must sum to <= 100%), which means it fails
+    // the white check (needs 60%+) first. This test verifies that an image with
+    // insufficient white background fails appropriately.
+    // 40% white, 55% black, 5% mid-tones
     const imageBuffer = await createTestImage(0.4, 0.55, 0.05);
     const result = await validateLineArt(imageBuffer);
 
     expect(result.ok).toBe(false);
-    expect(result.reason).toContain('Too much black');
+    // With 40% white, it fails the white check first (needs 60%+)
+    expect(result.reason).toContain('white');
   });
 
   it('should handle invalid image buffer gracefully', async () => {
