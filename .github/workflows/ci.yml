@@ -22,10 +22,11 @@ jobs:
       - name: Install dependencies
         run: |
           if [ -f package-lock.json ]; then
-            npm ci
+            npm ci || npm install --package-lock-only
           else
-            npm install
+            npm install --package-lock-only
           fi
+          npm ci
       - run: npm run lint
       - run: npm test
       - run: npm run build
