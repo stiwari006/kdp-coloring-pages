@@ -3,8 +3,8 @@ import type { ReactNode } from 'react';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'KDP Coloring Pages AI',
-  description: 'Generate Amazon KDP-compliant coloring pages with AI',
+  title: 'PromptSaver AI — Same intent. Less tokens.',
+  description: 'Optimize AI prompts for lower cost without changing what you ask.',
 };
 
 export default function RootLayout({
